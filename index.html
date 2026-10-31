@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friducha Taquería | Menú y Comida</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Logo de Friducha en las tarjetas de clientes */
+        .review-img-box .friducha-logo-review {
+            width: 100%;
+            height: 100%;
+            min-height: 220px;
+            object-fit: contain;
+            object-position: center;
+            display: block;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #f7f2e8;
+        }
+
+        /* Estilos específicos para los botones de agregar al carrito en las listas */
+        .menu-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+        }
+        .btn-add-cart {
+            background-color: var(--primary, #D4A373);
+            color: #181412;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .btn-add-cart:hover {
+            background-color: var(--primary-dark, #BC6C25);
+            color: #fff;
+        }
+
+        /* Estilos del Carrito (Botón Flotante y Panel Lateral) */
+        .cart-trigger-btn {
+            background: #D4A373;
+            color: #181412;
+            border: none;
+            padding: 0.5rem 1.1rem;
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .cart-trigger-btn:hover {
+            background: #BC6C25;
+            color: #FFF;
+        }
+        .cart-badge {
+            background: #E76F51;
+            color: #FFF;
+            border-radius: 50%;
+            padding: 2px 7px;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+        .floating-cart-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: #BC6C25;
+            color: #FFF;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            box-shadow: 0 12px 40px -4px rgba(31, 26, 23, 0.2);
+            cursor: pointer;
+            z-index: 999;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .floating-cart-btn:hover {
+            transform: scale(1.1);
+        }
+        .floating-cart-btn .cart-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+        .cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .cart-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            background: #FFF;
+            z-index: 1002;
+            box-shadow: 0 24px 60px -8px rgba(31, 26, 23, 0.2);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .cart-sidebar.active {
+            right: 0;
+        }
+        .cart-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #EFECE6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #181412;
+            color: #FFF;
+        }
+        .close-cart-btn {
+            background: none;
+            border: none;
+            color: #FFF;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        .cart-body {
+            padding: 1.5rem;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .empty-cart-msg {
+            color: #736B65;
+            text-align: center;
+            margin-top: 3rem;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #EFECE6;
+        }
+        .cart-item-info h4 {
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+            color: #181412;
+        }
+        .cart-item-info span {
+            font-size: 0.8rem;
+            color: #736B65;
+        }
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .cart-item-controls button {
+            background: #EFECE6;
+            border: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .cart-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #EFECE6;
+            background: #FDFCFA;
+        }
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #181412;
+        }
+    </style>
+</head>
+
+<body> 
+
+    <!-- BARRA SUPERIOR DE ADMINISTRADOR (OCULTA POR DEFECTO) -->
+    <div id="adminBar" class="admin-bar" style="display: none;">
+        <span><i class="fa-solid fa-user-shield"></i> Modo Edición de Dueño Activado</span>
+        <button id="logoutAdminBtn" class="btn-logout-admin"><i class="fa-solid fa-right-from-bracket"></i> Salir del Modo Edición</button>
+    </div>
+
+    <!-- BOTÓN FLOTANTE DEL CARRITO -->
+    <button class="floating-cart-btn" id="openCartFloat">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="cart-badge" id="cartBadgeFloat">0</span>
+    </button>
+
+    <!-- PANEL LATERAL DEL CARRITO -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <aside class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3><i class="fa-solid fa-bag-shopping"></i> Tu Pedido</h3>
+            <button class="close-cart-btn" id="closeCart"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <div class="cart-body" id="cartItemsContainer">
+            <p class="empty-cart-msg">Tu carrito está vacío. ¡Agrega tus antojitos favoritos del menú!</p>
+        </div>
+
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <strong id="cartTotalAmount">$0.00 MXN</strong>
+            </div>
+            <button class="btn btn-primary btn-checkout" id="checkoutBtn" style="width: 100%; justify-content: center;">
+                <i class="fa-brands fa-whatsapp"></i> Proceder a Pedir por WhatsApp
+            </button>
+        </div>
+    </aside>
+
+    <!-- ENCABEZADO -->
+    <header>
+        <div class="nav-container">
+            <!-- LOGO INTERACTIVO: DA ACCESO AL MODO EDICIÓN DE DUEÑO AL HACER CLIC -->
+            <a href="#" class="logo" id="mainLogoBtn" title="Hacer clic para Acceso Privado Dueño">
+                <i class="fa-solid fa-utensils"></i>
+                Friducha <span>Taquería</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="#menu">Menú</a></li>
+                <li><a href="#nosotros">Esencia & Reseñas</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+                <li>
+                    <button class="cart-trigger-btn" id="openCartNav">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span>Carrito</span>
+                        <span class="cart-badge" id="cartBadgeNav">0</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- PORTADA -->
+    <section class="hero">
+        <div class="hero-content">
+            <span class="hero-badge">
+                <i class="fa-solid fa-star"></i>
+                Sabor Tradicional y Auténtico
+            </span>
+
+            <h1>Los mejores antojitos
+                <span>y cortes al pastor</span>
+            </h1>
+
+            <p>
+                Disfruta de nuestra gran variedad de tacos, tortas,
+                burritos, gringas y mucho más preparados al momento.
+            </p>
+
+            <div class="hero-btns">
+                <a href="#menu" class="btn btn-primary">
+                    <i class="fa-solid fa-book-open"></i>
+                    Ver Menú Completo
+                </a>
+
+                <a href="https://wa.me/5574454907?text=Hola,%20me%20gustaría%20hacer%20un%20pedido"
+                   target="_blank" class="btn btn-outline">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    Pedir por WhatsApp
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- MENÚ DE PLATILLOS -->
+    <section id="menu">
+        <div class="section-header">
+            <span>Nuestras Especialidades</span>
+            <h2>Menú de la Casa</h2>
+            <p>Agrega tus platillos favoritos al carrito para armar tu pedido completo.</p>
+        </div>
+
+        <div class="menu-grid">
+
+            <!-- TACOS -->
+            <div class="menu-card" data-card-id="tacos">
+                <div class="card-img-wrapper">
+                    <img id="img-tacos" src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=800&q=85" alt="Tacos">
+                    <div class="price-tag" id="price-tag-tacos">Desde $14 MXN</div>
+                    <label class="btn-change-img admin-only-btn" for="input-img-tacos">
+                        <i class="fa-solid fa-camera"></i> Cambiar Foto
+                    </label>
+                    <input type="file" id="input-img-tacos" accept="image/*" class="admin-file-input" onchange="changeCardImage(event, 'tacos')">
+                </div>
+
+                <div class="card-body">
+                    <h3>Tacos</h3>
+                    <ul class="menu-list">
+                        <li><span>Suadero ($14)</span> <button class="btn-add-cart" onclick="addToCart('Taco de Suadero', 14)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Campechano ($14)</span> <button class="btn-add-cart" onclick="addToCart('Taco Campechano', 14)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Pastor ($14)</span> <button class="btn-add-cart" onclick="addToCart('Taco al Pastor', 14)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Longaniza ($14)</span> <button class="btn-add-cart" onclick="addToCart('Taco de Longaniza', 14)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Tripa ($16)</span> <button class="btn-add-cart" onclick="addToCart('Taco de Tripa', 16)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Taco árabe ($40)</span> <button class="btn-add-cart" onclick="addToCart('Taco Árabe', 40)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Orden cebollitas ($30)</span> <button class="btn-add-cart" onclick="addToCart('Orden de Cebollitas', 30)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                    </ul>
+
+                    <div class="card-footer">
+                        <span class="card-status">
+                            <i class="fa-solid fa-fire"></i> Al momento
+                        </span>
+                        <button class="btn-edit-price admin-only-btn" onclick="editCardPriceTag('tacos')">
+                            <i class="fa-solid fa-pen"></i> Editar Precio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SINCRONIZADAS Y MOLLETES -->
+            <div class="menu-card" data-card-id="sincronizadas">
+                <div class="card-img-wrapper">
+                    <img id="img-sincronizadas" src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=85" alt="Sincronizadas y molletes">
+                    <div class="price-tag" id="price-tag-sincronizadas">Desde $45 MXN</div>
+                    <label class="btn-change-img admin-only-btn" for="input-img-sincronizadas">
+                        <i class="fa-solid fa-camera"></i> Cambiar Foto
+                    </label>
+                    <input type="file" id="input-img-sincronizadas" accept="image/*" class="admin-file-input" onchange="changeCardImage(event, 'sincronizadas')">
+                </div>
+
+                <div class="card-body">
+                    <h3>Sincronizadas & Molletes</h3>
+                    <ul class="menu-list">
+                        <li><span>Sincronizadas (Orden) ($60)</span> <button class="btn-add-cart" onclick="addToCart('Sincronizadas (Orden)', 60)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Molletes sencillos ($45)</span> <button class="btn-add-cart" onclick="addToCart('Molletes Sencillos', 45)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Molletes Guisado ($70)</span> <button class="btn-add-cart" onclick="addToCart('Molletes Guisado (Pastor/Suadero)', 70)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Molletes Tripa ($75)</span> <button class="btn-add-cart" onclick="addToCart('Molletes de Tripa', 75)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                    </ul>
+
+                    <div class="card-footer">
+                        <span class="card-status">
+                            <i class="fa-solid fa-fire"></i> Caliente
+                        </span>
+                        <button class="btn-edit-price admin-only-btn" onclick="editCardPriceTag('sincronizadas')">
+                            <i class="fa-solid fa-pen"></i> Editar Precio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BURRITOS -->
+            <div class="menu-card" data-card-id="burritos">
+                <div class="card-img-wrapper">
+                    <img id="img-burritos" src="https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=800&q=85" alt="Burritos">
+                    <div class="price-tag" id="price-tag-burritos">Chico $40 / Grande $90</div>
+                    <label class="btn-change-img admin-only-btn" for="input-img-burritos">
+                        <i class="fa-solid fa-camera"></i> Cambiar Foto
+                    </label>
+                    <input type="file" id="input-img-burritos" accept="image/*" class="admin-file-input" onchange="changeCardImage(event, 'burritos')">
+                </div>
+
+                <div class="card-body">
+                    <h3>Burritos</h3>
+                    <ul class="menu-list">
+                        <li><span>Burrito Chico ($40)</span> <button class="btn-add-cart" onclick="addToCart('Burrito Chico (Guisado)', 40)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Burrito Grande ($90)</span> <button class="btn-add-cart" onclick="addToCart('Burrito Grande (Guisado)', 90)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Burrito Tripa Chico ($45)</span> <button class="btn-add-cart" onclick="addToCart('Burrito Tripa Chico', 45)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Burrito Tripa Grande ($95)</span> <button class="btn-add-cart" onclick="addToCart('Burrito Tripa Grande', 95)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                    </ul>
+
+                    <div class="card-footer">
+                        <span class="card-status">
+                            <i class="fa-solid fa-utensils"></i> Rellenos
+                        </span>
+                        <button class="btn-edit-price admin-only-btn" onclick="editCardPriceTag('burritos')">
+                            <i class="fa-solid fa-pen"></i> Editar Precio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GORDITAS -->
+            <div class="menu-card" data-card-id="gorditas">
+                <div class="card-img-wrapper">
+                    <img id="img-gorditas" src="https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=800&q=85" alt="Gorditas">
+                    <div class="price-tag" id="price-tag-gorditas">Desde $35 MXN</div>
+                    <label class="btn-change-img admin-only-btn" for="input-img-gorditas">
+                        <i class="fa-solid fa-camera"></i> Cambiar Foto
+                    </label>
+                    <input type="file" id="input-img-gorditas" accept="image/*" class="admin-file-input" onchange="changeCardImage(event, 'gorditas')">
+                </div>
+
+                <div class="card-body">
+                    <h3>Gorditas</h3>
+                    <ul class="menu-list">
+                        <li><span>Gordita Pollo ($35)</span> <button class="btn-add-cart" onclick="addToCart('Gordita de Pollo', 35)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Gordita Chicharrón ($35)</span> <button class="btn-add-cart" onclick="addToCart('Gordita de Chicharrón', 35)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Gordita Suadero/Pastor ($45)</span> <button class="btn-add-cart" onclick="addToCart('Gordita Guisado', 45)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Gordita Tripa ($55)</span> <button class="btn-add-cart" onclick="addToCart('Gordita de Tripa', 55)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                    </ul>
+
+                    <div class="card-footer">
+                        <span class="card-status">
+                            <i class="fa-solid fa-fire"></i> Crujientes
+                        </span>
+                        <button class="btn-edit-price admin-only-btn" onclick="editCardPriceTag('gorditas')">
+                            <i class="fa-solid fa-pen"></i> Editar Precio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TORTAS Y GRINGAS -->
+            <div class="menu-card" data-card-id="tortas">
+                <div class="card-img-wrapper">
+                    <img id="img-tortas" src="https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=800&q=85" alt="Tortas y gringas">
+                    <div class="price-tag" id="price-tag-tortas">Desde $50 MXN</div>
+                    <label class="btn-change-img admin-only-btn" for="input-img-tortas">
+                        <i class="fa-solid fa-camera"></i> Cambiar Foto
+                    </label>
+                    <input type="file" id="input-img-tortas" accept="image/*" class="admin-file-input" onchange="changeCardImage(event, 'tortas')">
+                </div>
+
+                <div class="card-body">
+                    <h3>Tortas & Gringas</h3>
+                    <ul class="menu-list">
+                        <li><span>Torta Guisado ($50)</span> <button class="btn-add-cart" onclick="addToCart('Torta Guisado', 50)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Torta Tripa ($55)</span> <button class="btn-add-cart" onclick="addToCart('Torta de Tripa', 55)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Gringa Guisado ($60)</span> <button class="btn-add-cart" onclick="addToCart('Gringa Guisado', 60)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Gringa Tripa ($70)</span> <button class="btn-add-cart" onclick="addToCart('Gringa de Tripa', 70)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                    </ul>
+
+                    <div class="card-footer">
+                        <span class="card-status">
+                            <i class="fa-solid fa-cheese"></i> Con queso
+                        </span>
+                        <button class="btn-edit-price admin-only-btn" onclick="editCardPriceTag('tortas')">
+                            <i class="fa-solid fa-pen"></i> Editar Precio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TOSTADAS Y ANTOJITOS -->
+            <div class="menu-card" data-card-id="tostadas">
+                <div class="card-img-wrapper">
+                    <img id="img-tostadas" src="https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?auto=format&fit=crop&w=800&q=85" alt="Tostadas">
+                    <div class="price-tag" id="price-tag-tostadas">Desde $25 MXN</div>
+                    <label class="btn-change-img admin-only-btn" for="input-img-tostadas">
+                        <i class="fa-solid fa-camera"></i> Cambiar Foto
+                    </label>
+                    <input type="file" id="input-img-tostadas" accept="image/*" class="admin-file-input" onchange="changeCardImage(event, 'tostadas')">
+                </div>
+
+                <div class="card-body">
+                    <h3>Tostadas & Antojitos</h3>
+                    <ul class="menu-list">
+                        <li><span>Tostada de Tinga ($25)</span> <button class="btn-add-cart" onclick="addToCart('Tostada de Tinga', 25)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Tostada de Pata ($25)</span> <button class="btn-add-cart" onclick="addToCart('Tostada de Pata', 25)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Chicharrón preparado ($40)</span> <button class="btn-add-cart" onclick="addToCart('Chicharrón Preparado', 40)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                    </ul>
+
+                    <div class="card-footer">
+                        <span class="card-status">
+                            <i class="fa-solid fa-leaf"></i> Frescas
+                        </span>
+                        <button class="btn-edit-price admin-only-btn" onclick="editCardPriceTag('tostadas')">
+                            <i class="fa-solid fa-pen"></i> Editar Precio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HAMBURGUESAS -->
+            <div class="menu-card" data-card-id="hamburguesas">
+                <div class="card-img-wrapper">
+                    <img id="img-hamburguesas" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=85" alt="Hamburguesas">
+                    <div class="price-tag" id="price-tag-hamburguesas">Desde $60 MXN</div>
+                    <label class="btn-change-img admin-only-btn" for="input-img-hamburguesas">
+                        <i class="fa-solid fa-camera"></i> Cambiar Foto
+                    </label>
+                    <input type="file" id="input-img-hamburguesas" accept="image/*" class="admin-file-input" onchange="changeCardImage(event, 'hamburguesas')">
+                </div>
+
+                <div class="card-body">
+                    <h3>Hamburguesas (con papas)</h3>
+                    <ul class="menu-list">
+                        <li><span>Sencilla ($60)</span> <button class="btn-add-cart" onclick="addToCart('Hamburguesa Sencilla', 60)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Hawaiana ($70)</span> <button class="btn-add-cart" onclick="addToCart('Hamburguesa Hawaiana', 70)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Al Pastor ($80)</span> <button class="btn-add-cart" onclick="addToCart('Hamburguesa Al Pastor', 80)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Suadero ($90)</span> <button class="btn-add-cart" onclick="addToCart('Hamburguesa de Suadero', 90)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Doble ($90)</span> <button class="btn-add-cart" onclick="addToCart('Hamburguesa Doble', 90)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Doble + Pastor ($100)</span> <button class="btn-add-cart" onclick="addToCart('Hamburguesa Doble + Pastor', 100)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                    </ul>
+
+                    <div class="card-footer">
+                        <span class="card-status">
+                            <i class="fa-solid fa-burger"></i> Con papas
+                        </span>
+                        <button class="btn-edit-price admin-only-btn" onclick="editCardPriceTag('hamburguesas')">
+                            <i class="fa-solid fa-pen"></i> Editar Precio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HOT DOGS Y PAPAS -->
+            <div class="menu-card" data-card-id="hotdogs">
+                <div class="card-img-wrapper">
+                    <img id="img-hotdogs" src="https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=800&q=85" alt="Hot dogs">
+                    <div class="price-tag" id="price-tag-hotdogs">Desde $25 MXN</div>
+                    <label class="btn-change-img admin-only-btn" for="input-img-hotdogs">
+                        <i class="fa-solid fa-camera"></i> Cambiar Foto
+                    </label>
+                    <input type="file" id="input-img-hotdogs" accept="image/*" class="admin-file-input" onchange="changeCardImage(event, 'hotdogs')">
+                </div>
+
+                <div class="card-body">
+                    <h3>Hot Dogs & Papas</h3>
+                    <ul class="menu-list">
+                        <li><span>Papas a la francesa ($50)</span> <button class="btn-add-cart" onclick="addToCart('Papas a la Francesa', 50)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Hot-dog sencillo ($25)</span> <button class="btn-add-cart" onclick="addToCart('Hot-dog Sencillo', 25)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Orden de 3 sencillos ($60)</span> <button class="btn-add-cart" onclick="addToCart('Orden de 3 Hot-dogs', 60)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Hot Dog + Queso/Tocino ($30)</span> <button class="btn-add-cart" onclick="addToCart('Hot Dog con Queso/Tocino', 30)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                        <li><span>Hot-Dog Hawaiano/Pastor ($35)</span> <button class="btn-add-cart" onclick="addToCart('Hot-Dog Especial', 35)"><i class="fa-solid fa-plus"></i> Agregar</button></li>
+                    </ul>
+
+                    <div class="card-footer">
+                        <span class="card-status">
+                            <i class="fa-solid fa-hotdog"></i> Rápidos
+                        </span>
+                        <button class="btn-edit-price admin-only-btn" onclick="editCardPriceTag('hotdogs')">
+                            <i class="fa-solid fa-pen"></i> Editar Precio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ESENCIA DEL NEGOCIO -->
+    <section id="nosotros" class="features-section">
+        <div class="section-header">
+            <span>Nuestra Esencia</span>
+            <h2>¿Por qué elegirnos?</h2>
+            <p>Comprometidos con ofrecerte calidad, excelente sabor y una atención inigualable.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-box">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-seedling"></i>
+                </div>
+                <h3>Ingredientes Frescos</h3>
+                <p>Seleccionamos diariamente productos naturales para garantizar el mejor sabor en cada plato.</p>
+            </div>
+
+            <div class="feature-box">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-fire-burner"></i>
+                </div>
+                <h3>Preparado al Momento</h3>
+                <p>Cocinamos cuidadosamente tras recibir tu orden para asegurar frescura total.</p>
+            </div>
+
+            <div class="feature-box">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-headset"></i>
+                </div>
+                <h3>Atención Directa</h3>
+                <p>Comunicación rápida y personalizada a través de llamada o mensaje.</p>
+            </div>
+        </div>
+
+        <!-- RESEÑAS DE CLIENTES -->
+        <div class="reviews-wrapper">
+            <div class="section-header" style="margin-top: 5rem; margin-bottom: 3rem;">
+                <span>Comunidad Friducha</span>
+                <h2>Lo que dicen nuestros clientes</h2>
+                <p>Momentos y fotos compartidos por quienes disfrutan de nuestros antojitos.</p>
+            </div>
+
+            <!-- FORMULARIO DE COMENTARIOS -->
+            <div class="comment-form-container">
+                <h3>
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    ¡Deja tu comentario y foto!
+                </h3>
+
+                <form id="commentForm">
+                    <div class="form-group">
+                        <label for="clientNameInput">Tu nombre:</label>
+                        <input type="text" id="clientNameInput" placeholder="Ej. Ana García" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="commentTextInput">Tu opinión:</label>
+                        <textarea id="commentTextInput" rows="3" placeholder="Cuéntanos qué te pareció el sabor..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="photoInput">Sube la foto de tu platillo:</label>
+                        <input type="file" id="photoInput" accept="image/*" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1rem; width: 100%; justify-content: center;">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Publicar mi comentario
+                    </button>
+                </form>
+            </div>
+
+            <!-- TARJETAS DE RESEÑAS -->
+            <div class="reviews-grid" id="reviewsGrid">
+
+                <!-- RESEÑA 1 -->
+                <div class="review-card">
+                    <div class="review-img-box">
+                        <img
+                            class="friducha-logo-review"
+                            src="carlos mendoza.jpeg"
+                            alt="Foto Carlos Mendoza">
+                        <span class="review-tag">Cliente Verificado</span>
+                    </div>
+
+                    <div class="review-content">
+                        <div class="stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+
+                        <p class="review-text">
+                            "Los mejores tacos al pastor de la zona sin duda alguna.
+                            El suadero jugoso y las salsas tienen un sazón increíble.
+                            ¡Excelente servicio!"
+                        </p>
+
+                        <h4 class="client-name">— Carlos Mendoza</h4>
+                    </div>
+                </div>
+
+                <!-- RESEÑA 2 -->
+                <div class="review-card">
+                    <div class="review-img-box">
+                        <img
+                            class="friducha-logo-review"
+                            src="sofia r..jpeg"
+                            alt="Foto Sofía R.">
+                        <span class="review-tag">Cliente Verificado</span>
+                    </div>
+
+                    <div class="review-content">
+                        <div class="stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+
+                        <p class="review-text">
+                            "Pedimos unas sincronizadas y burritos para cenar con
+                            la familia, llegaron calientes y con una porción muy
+                            generosa. 100% recomendado."
+                        </p>
+
+                        <h4 class="client-name">— Sofía R.</h4>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- CONTACTO POR WHATSAPP -->
+            <div class="upload-cta-box">
+                <div class="upload-cta-text">
+                    <h3>¿Prefieres mandarlo por mensaje?</h3>
+                    <p>Envíanos tu foto por WhatsApp y nosotros la publicaremos por ti.</p>
+                </div>
+
+                <a href="https://wa.me/5574454907?text=Hola,%20quiero%20compartir%20mi%20foto%20y%20comentario"
+                   target="_blank" class="btn btn-primary">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    Compartir por WhatsApp
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section id="contacto" class="contact-section-wrapper">
+        <div class="contact-banner">
+            <div class="contact-content">
+                <span class="hero-badge badge-contact">Comunícate Ya</span>
+
+                <h2>¿Listo para ordenar tu comida?</h2>
+
+                <p>
+                    Llámanos o escríbenos directamente para resolver tus dudas
+                    y recibir tus pedidos.
+                </p>
+
+                <a href="tel:+525574454907" class="phone-display">
+                    <i class="fa-solid fa-phone"></i>
+                    5574454907
+                </a>
+
+                <div>
+                    <a href="https://wa.me/5574454907?text=Hola,%20me%20interesa%20hacer%20un%20pedido"
+                       target="_blank" class="btn btn-primary">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        Escribir por WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PIE DE PÁGINA -->
+    <footer>
+        <div class="footer-container">
+
+            <div class="footer-col">
+                <a href="#" class="logo footer-logo">
+                    <i class="fa-solid fa-utensils"></i>
+                    Friducha <span>Taquería</span>
+                </a>
+
+                <p>Llevando pasión, sabor casero y la mejor atención directo a cada cliente.</p>
+            </div>
+
+            <div class="footer-col">
+                <h3>Contacto Rápido</h3>
+
+                <a href="tel:+525574454907">
+                    <i class="fa-solid fa-phone phone-icon"></i>
+                    5574454907
+                </a>
+
+                <a href="https://wa.me/5574454907?text=Hola,%20me%20gustaría%20hacer%20un%20pedido"
+                   target="_blank">
+                    <i class="fa-brands fa-whatsapp wa-icon"></i>
+                    Enviar WhatsApp
+                </a>
+
+                <a href="#menu">Menú de Platillos</a>
+            </div>
+
+            <div class="footer-col">
+                <h3>Ubicación y Referencia</h3>
+
+                <div class="location-highlight">
+                    <p class="location-title">Dirección cercana:</p>
+                    <p class="location-text">
+                        Shanú: heladería y toppings, Sta Cruz,
+                        Chipiltepec, 55890 Tepexpan, Méx.
+                    </p>
+                </div>
+
+                <div class="map-container">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3757.2655169098935!2d-98.9248232!3d19.6587635!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d1eefd492bb94d%3A0xb36b53e839e94474!2sShan%C3%BA%20Helader%C3%ADa%20%26%20Toppings!5e0!3m2!1ses!2smx!4v1700000000000!5m2!1ses!2smx"
+                        allowfullscreen
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>© 2026 Friducha Taquería. Todos los derechos reservados.</p>
+
+            <div class="social-icons">
+                <a href="tel:+525574454907" aria-label="Teléfono">
+                    <i class="fa-solid fa-phone"></i>
+                </a>
+
+                <a href="https://wa.me/5574454907" target="_blank" aria-label="WhatsApp">
+                    <i class="fa-brands fa-whatsapp"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPT DE CARRITO, RESEÑAS Y MODO EDICIÓN CON CLIC EN EL LOGO -->
+    <script>
+        // --- 1. LÓGICA DE ACCESO PRIVADO AL HACER CLIC EN EL LOGO ---
+        const PASSWORD_CORRECTA = "FriduCha26";
+        const mainLogoBtn = document.getElementById('mainLogoBtn');
+        const adminBar = document.getElementById('adminBar');
+        const logoutAdminBtn = document.getElementById('logoutAdminBtn');
+
+        function solicitarAccesoDueño(e) {
+            if (e) e.preventDefault();
+
+            // Si ya está activo el modo administración, no pide contraseña nuevamente
+            if (sessionStorage.getItem('isFriduchaAdmin') === 'true') {
+                return;
+            }
+
+            const pass = prompt("Ingrese la contraseña del dueño para editar el menú:");
+            if (pass === PASSWORD_CORRECTA) {
+                alert("¡Bienvenido Friducha! Modo edición activado.");
+                sessionStorage.setItem('isFriduchaAdmin', 'true');
+                activarModoEdicion();
+            } else if (pass !== null) {
+                alert("Contraseña incorrecta. Acceso denegado.");
+            }
+        }
+
+        function activarModoEdicion() {
+            document.body.classList.add('admin-mode-active');
+            adminBar.style.display = 'flex';
+        }
+
+        function desactivarModoEdicion() {
+            document.body.classList.remove('admin-mode-active');
+            adminBar.style.display = 'none';
+            sessionStorage.removeItem('isFriduchaAdmin');
+            alert("Has salido del Modo Edición.");
+        }
+
+        mainLogoBtn.addEventListener('click', solicitarAccesoDueño);
+        logoutAdminBtn.addEventListener('click', desactivarModoEdicion);
+
+        // Verificar si la sesión ya estaba activa al recargar la página
+        if (sessionStorage.getItem('isFriduchaAdmin') === 'true') {
+            activarModoEdicion();
+        }
+
+        // --- 2. FUNCIONES DE EDICIÓN DE FOTOS Y PRECIOS ---
+        function changeCardImage(event, cardId) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgElement = document.getElementById(`img-${cardId}`);
+                    imgElement.src = e.target.result;
+                    localStorage.setItem(`friducha_img_${cardId}`, e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function editCardPriceTag(cardId) {
+            const priceTag = document.getElementById(`price-tag-${cardId}`);
+            const nuevoTexto = prompt("Escribe el nuevo precio o leyenda para esta sección:", priceTag.textContent);
+            if (nuevoTexto !== null && nuevoTexto.trim() !== "") {
+                priceTag.textContent = nuevoTexto.trim();
+                localStorage.setItem(`friducha_price_${cardId}`, nuevoTexto.trim());
+            }
+        }
+
+        // Cargar cambios guardados de imágenes y precios desde LocalStorage
+        window.addEventListener('DOMContentLoaded', () => {
+            const cardIds = ['tacos', 'sincronizadas', 'burritos', 'gorditas', 'tortas', 'tostadas', 'hamburguesas', 'hotdogs'];
+            cardIds.forEach(id => {
+                const savedImg = localStorage.getItem(`friducha_img_${id}`);
+                if (savedImg) {
+                    const imgEl = document.getElementById(`img-${id}`);
+                    if (imgEl) imgEl.src = savedImg;
+                }
+                const savedPrice = localStorage.getItem(`friducha_price_${id}`);
+                if (savedPrice) {
+                    const priceEl = document.getElementById(`price-tag-${id}`);
+                    if (priceEl) priceEl.textContent = savedPrice;
+                }
+            });
+        });
+
+        // --- 3. LÓGICA DEL CARRITO DE COMPRAS ---
+        let cart = [];
+
+        const cartOverlay = document.getElementById('cartOverlay');
+        const cartSidebar = document.getElementById('cartSidebar');
+        const openCartNav = document.getElementById('openCartNav');
+        const openCartFloat = document.getElementById('openCartFloat');
+        const closeCart = document.getElementById('closeCart');
+        const cartItemsContainer = document.getElementById('cartItemsContainer');
+        const cartTotalAmount = document.getElementById('cartTotalAmount');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        const cartBadgeNav = document.getElementById('cartBadgeNav');
+        const cartBadgeFloat = document.getElementById('cartBadgeFloat');
+
+        function toggleCart() {
+            cartSidebar.classList.toggle('active');
+            cartOverlay.classList.toggle('active');
+        }
+
+        openCartNav.addEventListener('click', toggleCart);
+        openCartFloat.addEventListener('click', toggleCart);
+        closeCart.addEventListener('click', toggleCart);
+        cartOverlay.addEventListener('click', toggleCart);
+
+        function addToCart(name, price) {
+            const existingItem = cart.find(item => item.name === name);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ name, price, quantity: 1 });
+            }
+            updateCart();
+            
+            if (!cartSidebar.classList.contains('active')) {
+                toggleCart();
+            }
+        }
+
+        function changeQuantity(name, amount) {
+            const item = cart.find(item => item.name === name);
+            if (item) {
+                item.quantity += amount;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(i => i.name !== name);
+                }
+            }
+            updateCart();
+        }
+
+        function updateCart() {
+            cartItemsContainer.innerHTML = '';
+            let total = 0;
+            let totalCount = 0;
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p class="empty-cart-msg">Tu carrito está vacío. ¡Agrega tus antojitos favoritos del menú!</p>';
+            } else {
+                cart.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+                    totalCount += item.quantity;
+
+                    const cartItemEl = document.createElement('div');
+                    cartItemEl.className = 'cart-item';
+                    cartItemEl.innerHTML = `
+                        <div class="cart-item-info">
+                            <h4>${item.name}</h4>
+                            <span>$${item.price}.00 c/u</span>
+                        </div>
+                        <div class="cart-item-controls">
+                            <button onclick="changeQuantity('${item.name}', -1)">-</button>
+                            <span>${item.quantity}</span>
+                            <button onclick="changeQuantity('${item.name}', 1)">+</button>
+                        </div>
+                        <div class="cart-item-price">$${itemTotal}.00</div>
+                    `;
+                    cartItemsContainer.appendChild(cartItemEl);
+                });
+            }
+
+            cartTotalAmount.textContent = `$${total}.00 MXN`;
+            cartBadgeNav.textContent = totalCount;
+            cartBadgeFloat.textContent = totalCount;
+        }
+
+        checkoutBtn.addEventListener('click', () => {
+            if (cart.length === 0) {
+                alert('Tu carrito está vacío.');
+                return;
+            }
+
+            let message = "Hola, me gustaría realizar el siguiente pedido:\n\n";
+            let total = 0;
+
+            cart.forEach(item => {
+                const subtotal = item.price * item.quantity;
+                total += subtotal;
+                message += `• ${item.quantity}x ${item.name} - $${subtotal}.00 MXN\n`;
+            });
+
+            message += `\n*Total a pagar: $${total}.00 MXN*`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/5574454907?text=${encodedMessage}`, '_blank');
+        });
+
+        // --- 4. LÓGICA DE COMENTARIOS ---
+        document.getElementById('commentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('clientNameInput').value.trim();
+            const comment = document.getElementById('commentTextInput').value.trim();
+            const photoFile = document.getElementById('photoInput').files[0];
+
+            if (!photoFile) {
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const imageUrl = event.target.result;
+
+                const newCard = document.createElement('div');
+                newCard.className = 'review-card';
+
+                const imageBox = document.createElement('div');
+                imageBox.className = 'review-img-box';
+
+                const image = document.createElement('img');
+                image.className = 'friducha-logo-review';
+                image.src = imageUrl;
+                image.alt = 'Foto de cliente';
+
+                const tag = document.createElement('span');
+                tag.className = 'review-tag';
+                tag.textContent = 'Nueva Reseña';
+
+                imageBox.appendChild(image);
+                imageBox.appendChild(tag);
+
+                const content = document.createElement('div');
+                content.className = 'review-content';
+
+                const stars = document.createElement('div');
+                stars.className = 'stars';
+
+                for (let i = 0; i < 5; i++) {
+                    const star = document.createElement('i');
+                    star.className = 'fa-solid fa-star';
+                    stars.appendChild(star);
+                }
+
+                const reviewText = document.createElement('p');
+                reviewText.className = 'review-text';
+                reviewText.textContent = '"' + comment + '"';
+
+                const clientName = document.createElement('h4');
+                clientName.className = 'client-name';
+                clientName.textContent = '— ' + name;
+
+                content.appendChild(stars);
+                content.appendChild(reviewText);
+                content.appendChild(clientName);
+
+                newCard.appendChild(imageBox);
+                newCard.appendChild(content);
+
+                document.getElementById('reviewsGrid').prepend(newCard);
+                document.getElementById('commentForm').reset();
+            };
+
+            reader.readAsDataURL(photoFile);
+        });
+    </script>
+
+</body>
+</html>
